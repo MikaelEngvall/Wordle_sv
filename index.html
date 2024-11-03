@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Swedish Random Word Generator</title>
+</head>
+<body>
+  <h1>Random Swedish Word Generator</h1>
+  
+  <input type="file" id="fileInput" accept=".txt">
+  <br><br>
+
+  <label for="wordLength">Word Length:</label>
+  <input type="number" id="wordLength" min="1" required>
+  <br><br>
+
+  <label for="numWords">Number of Words:</label>
+  <input type="number" id="numWords" min="1" value="1">
+  <br><br>
+
+  <label for="showAllWords">Show All Words of This Length</label>
+  <input type="checkbox" id="showAllWords">
+  <br><br>
+
+  <button onclick="getWord()">Get Random Words</button>
+
+  <div id="result"></div>
+
+  <script>
+    let words = [];
+
+    // Function to handle file upload
+    document.getElementById('fileInput').addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          // Split file content into words
+          words = e.target.result.split('\n').map(word => word.trim());
+          alert("File loaded successfully!");
+        };
+        reader.readAsText(file);
+      }
+    });
+
+    // Function to get random words of a specific length or all words of that length
+    function getWord() {
+      const length = parseInt(document.getElementById('wordLength').value);
+      const numWords = parseInt(document.getElementById('numWords').value);
+      const showAll = document.getElementById('showAllWords').checked;
+      
+      if (isNaN(length) || length <= 0) {
+        document.getElementById('result').textContent = "Please enter a valid word length.";
+        return;
+      }
+      
+      // Filter words by length and ensure they only contain letters
+      const filteredWords = words.filter(word => 
+        word.length === length && 
+        /^[a-zA-ZåäöÅÄÖ]+$/.test(word) // Only words with letters
+      );
+
+      if (showAll) {
+        // Show all filtered words
+        if (filteredWords.length === 0) {
+          document.getElementById('result').textContent = `No words found with length ${length}`;
+        } else {
+          document.getElementById('result').textContent = `All words of length ${length}: ${filteredWords.join(', ')}`;
+        }
+        return;
+      }
+      
+      // If the number of words requested is more than available
+      const count = Math.min(numWords, filteredWords.length);
+      if (count === 0) {
+        document.getElementById('result').textContent = `No words found with length ${length}`;
+        return;
+      }
+      
+      // Select random words
+      const randomWords = [];
+      const usedIndices = new Set();
+      while (randomWords.length < count) {
+        const randomIndex = Math.floor(Math.random() * filteredWords.length);
+        if (!usedIndices.has(randomIndex)) {
+          randomWords.push(filteredWords[randomIndex]);
+          usedIndices.add(randomIndex);
+        }
+      }
+
+      document.getElementById('result').textContent = `Random Swedish words of length ${length}: ${randomWords.join(', ')}`;
+    }
+  </script>
+</body>
+</html>
